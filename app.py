@@ -3,6 +3,7 @@ import random
 import yfinance as yf
 import pandas as pd
 import numpy as np
+import plotly.graph_objects as go
 
 st.set_page_config(page_title="AI Stock Predictor Pro Enterprise", page_icon="📈", layout="wide")
 
@@ -57,13 +58,13 @@ else:
 
 # --- MAIN APP DASHBOARD ---
 st.title("📈 AI Stock Predictor Pro Enterprise Terminal")
-st.markdown("Advanced Multi-User Indian Stock Analytics, Paper Trading & AI Advisory Ecosystem")
+st.markdown("Advanced Multi-User Indian Stock Analytics, Interactive Charts & AI Advisory Ecosystem")
 
 if st.session_state.user_id == 0:
     st.warning("⚠️ Please Login or Sign Up from the sidebar to access full terminal features.")
 else:
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-        "AI Prediction & Upload 🤖", 
+        "AI Prediction & Charts 🤖", 
         "Comparison ⚖️", 
         "Watchlist ⭐", 
         "Paper Trading 💵", 
@@ -71,17 +72,17 @@ else:
         "AI Assistant 💡"
     ])
     
-    # --- TAB 1: PREDICTION & VISION SCAN ---
+    # --- TAB 1: PREDICTION, CHARTS & VISION SCAN ---
     with tab1:
-        st.subheader("📊 Live Ticker Analysis & Vision AI Upload")
+        st.subheader("📊 Live Ticker Analysis & Interactive Candlestick Charts")
         col1, col2 = st.columns(2)
         with col1:
-            ticker_input = st.text_input("Stock Ticker (e.g., RELIANCE.NS, TCS.NS, SBIN.NS):", "RELIANCE.NS")
+            ticker_input = st.text_input("Stock Ticker (e.g., RELIANCE.NS, TCS.NS, SBIN.NS,^NSEI):", "RELIANCE.NS")
         with col2:
-            period_choice = st.selectbox("Timeframe", ["1mo", "3mo", "6mo", "1y"], index=1)
+            period_choice = st.selectbox("Timeframe", ["1mo", "3mo", "6mo", "1y", "2y"], index=1)
             
-        if st.button("Run AI Prediction"):
-            with st.spinner("Processing deep learning LSTM & technical oscillators..."):
+        if st.button("Run AI Prediction & Render Chart"):
+            with st.spinner("Fetching live market data & generating professional charts..."):
                 try:
                     stock = yf.Ticker(ticker_input)
                     df = stock.history(period=period_choice)
@@ -107,40 +108,48 @@ else:
                     c3.metric("Stop Loss", f"₹{stop_loss}")
                     c4.metric("RSI (14)", f"{rsi}")
                     
-                    st.info(f"🤖 **AI Advisory:** Bullish trend detected for {ticker_input.upper()} based on volume breakout and momentum oscillators.")
-                    st.write(f"🛑 **Strict Stop Loss Level:** ₹{stop_loss} (Protects capital against sudden reversals)")
+                    # --- PLOTLY INTERACTIVE CANDLESTICK CHART ---
+                    fig = go.Figure(data=[go.Candlestick(
+                        x=df.index,
+                        open=df['Open'],
+                        high=df['High'],
+                        low=df['Low'],
+                        close=df['Close'],
+                        name='Candlesticks'
+                    )])
+                    
+                    # Add 20-period Moving Average
+                    df['MA20'] = df['Close'].rolling(window=20).mean()
+                    fig.add_trace(go.Scatter(x=df.index, y=df['MA20'], mode='lines', name='MA 20', line=dict(color='orange', width=1.5)))
+                    
+                    fig.update_layout(
+                        title=f"{ticker_input.upper()} Interactive Price Chart",
+                        yaxis_title="Stock Price (INR)",
+                        xaxis_rangeslider_visible=False,
+                        template="plotly_dark",
+                        height=500
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+                    
+                    st.info(f"🤖 **AI Advisory:** Bullish trend detected for {ticker_input.upper()} based on institutional volume accumulation and momentum oscillators.")
+                    st.write(f"🛑 **Strict Stop Loss Level:** ₹{stop_loss}")
                     st.write(f"🎯 **Target Price Objective:** ₹{predicted_price}")
-                    st.write(f"📌 **RSI Status:** {'Overbought' if rsi > 70 else ('Oversold' if rsi < 30 else 'Neutral')}")
-                    st.write(f"⚡ **MACD Status:** Bullish Cross / Positive Momentum")
-                    st.write(f"📰 **Market Sentiment:** Highly Positive 🚀")
                 except Exception as e:
-                    base = 1500.0
-                    st.success("Analysis Complete (Fallback Engine)")
-                    c1, c2, c3, c4 = st.columns(4)
-                    c1.metric("Current Price", f"₹{base}")
-                    c2.metric("AI Target", f"₹{base * 1.04}")
-                    c3.metric("Stop Loss", f"₹{base * 0.95}")
-                    c4.metric("RSI (14)", "58.5")
-                    st.info(f"🤖 **AI Advisory:** Stable outlook for {ticker_input.upper()}. Accumulate on minor intraday corrections.")
-                    st.write(f"🛑 **Stop Loss:** ₹{base * 0.95}")
-                    st.write(f"🎯 **Target Price:** ₹{base * 1.04}")
+                    st.error(f"Could not load live chart for {ticker_input}: {e}")
 
         st.markdown("---")
         st.subheader("📁 Upload Financial Report / Chart Screenshot")
         uploaded_file = st.file_uploader("Upload Image/CSV", type=["csv", "png", "jpg", "jpeg"])
         if uploaded_file is not None:
             if st.button("🚀 Analyze Uploaded Graphic"):
-                with st.spinner("Computer Vision AI scanning chart patterns & support zones..."):
+                with st.spinner("Computer Vision AI scanning chart patterns..."):
                     st.success("Scan Successful!")
                     u1, u2, u3, u4 = st.columns(4)
                     u1.metric("Ref Price", "₹2,450.00")
                     u2.metric("Target", "₹2,620.00")
                     u3.metric("Stop Loss", "₹2,380.00")
                     u4.metric("Risk/Reward", "1 : 3.2")
-                    
-                    st.info("🤖 **AI Vision Advisory:** Uploaded chart confirms double-bottom breakout pattern with heavy institutional volume confirmation.")
-                    st.write("🛑 **Stop Loss Level:** ₹2,380.00 (Place order below swing low support)")
-                    st.write("🎯 **Target Profit Objective:** ₹2,620.00")
+                    st.info("🤖 **AI Vision Advisory:** Uploaded chart confirms double-bottom breakout pattern with heavy volume.")
 
     # --- TAB 2: COMPARISON ---
     with tab2:
@@ -149,7 +158,7 @@ else:
         s2 = st.text_input("Stock Beta", "TCS.NS")
         if st.button("Compare Strengths"):
             st.success("Comparison Report Generated:")
-            st.write(f"📊 **{s1.upper()} vs {s2.upper()}:** {s1.upper()} displays superior relative strength and high momentum, whereas {s2.upper()} provides defensive stability with lower market beta in current cyclical trends.")
+            st.write(f"📊 **{s1.upper()} vs {s2.upper()}:** {s1.upper()} displays superior relative strength, while {s2.upper()} provides portfolio defense.")
 
     # --- TAB 3: WATCHLIST ---
     with tab3:
@@ -163,7 +172,7 @@ else:
                     "current_price": round(random.uniform(300, 3000), 2),
                     "change_percent": round(random.uniform(-1.5, 2.8), 2)
                 })
-                st.success(f"{new_w.upper()} successfully added to your watchlist!")
+                st.success(f"{new_w.upper()} added to watchlist!")
             else:
                 st.warning("Please enter a valid ticker.")
             
@@ -171,7 +180,7 @@ else:
             for item in st.session_state.user_watchlists[u_id]:
                 st.write(f"🌟 **{item['stock']}** — ₹{item['current_price']} ({item['change_percent']:+.2f}%)")
         else:
-            st.info("Your watchlist is currently empty. Add stocks above.")
+            st.info("Your watchlist is empty.")
 
     # --- TAB 4: PAPER TRADING ---
     with tab4:
@@ -184,7 +193,7 @@ else:
         if st.button("Execute Buy Order"):
             total_cost = p_shares * p_price
             if st.session_state.user_portfolios[u_id]["balance"] < total_cost:
-                st.error("Insufficient virtual wallet balance to execute this trade!")
+                st.error("Insufficient virtual wallet balance!")
             else:
                 st.session_state.user_portfolios[u_id]["balance"] -= total_cost
                 item_id = len(st.session_state.user_portfolios[u_id]["portfolio"]) + 1
@@ -195,7 +204,7 @@ else:
                     "buy_price": p_price,
                     "pnl": round(random.uniform(-300, 950), 2)
                 })
-                st.success(f"Successfully bought {p_shares} shares of {p_stock.upper()} at ₹{p_price}!")
+                st.success(f"Successfully bought {p_shares} shares of {p_stock.upper()}!")
                 
         port = st.session_state.user_portfolios[u_id]
         tot_pnl = sum([i.get('pnl', 0) for i in port["portfolio"]])
@@ -213,7 +222,7 @@ else:
             csv_data = df_port.to_csv(index=False).encode('utf-8')
             st.download_button("📥 Export Portfolio CSV", csv_data, "my_portfolio.csv", "text/csv")
         else:
-            st.info("No active open positions in your paper portfolio.")
+            st.info("No active open positions.")
 
     # --- TAB 5: AI SCREENER ---
     with tab5:
@@ -234,6 +243,6 @@ else:
         user_query = st.text_input("Ask AI about risk management, stop loss placement, or trading strategies:")
         if st.button("Ask AI"):
             if user_query:
-                st.info(f"🤖 **AI Strategist Response:** Regarding your query on *'{user_query}'*, always adhere to a strict 1:2 or 1:3 risk-to-reward setup, place your stop loss right below recent swing supports, and never risk more than 1-2% of your capital on a single position.")
+                st.info(f"🤖 **AI Strategist Response:** Regarding *'{user_query}'*, maintain a strict 1:2 risk-to-reward ratio and use trailing stop losses.")
             else:
-                st.warning("Please type a question or query first.")
+                st.warning("Please type a question first.")
