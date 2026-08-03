@@ -1,10 +1,1 @@
-fastapi
-uvicorn
-streamlit
-requests
-pandas
-numpy
-yfinance
-plotly
-google-genai
 
